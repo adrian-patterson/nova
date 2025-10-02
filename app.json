@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Nova Browser",
+    "slug": "nova",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.adrianpatterson.nova-browser",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.adrianpatterson.nova-browser"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "description": "Nova is a minimalist browser app designed for emergency web access while maintaining digital minimalism. Simple URL input with native Safari viewing.",
+    "keywords": [
+      "browser",
+      "minimalist",
+      "safari",
+      "web",
+      "simple"
+    ],
+    "privacy": "public",
+    "extra": {
+      "eas": {
+        "projectId": "24a47022-cb2c-4446-9e34-610789c5f7dd"
+      }
+    },
+    "owner": "canadrian72"
+  }
+}
