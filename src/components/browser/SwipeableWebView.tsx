@@ -76,7 +76,7 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
         <ActivityIndicator
           size="large"
           color={theme.colors.text}
-          animating={isRefreshing || pullDistance !== 0}
+          animating={isRefreshing}
         />
       </Animated.View>
 

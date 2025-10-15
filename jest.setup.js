@@ -15,23 +15,6 @@ jest.mock('react-native-webview', () => {
   };
 });
 
-// Mock expo-camera
-jest.mock('expo-camera', () => ({
-  Camera: {
-    Constants: {
-      Type: {
-        back: 'back',
-        front: 'front',
-      },
-    },
-    useCameraPermissions: () => [
-      { granted: true, canAskAgain: true, status: 'granted' },
-      jest.fn(),
-    ],
-  },
-  CameraView: 'CameraView',
-}));
-
 // Mock expo-status-bar
 jest.mock('expo-status-bar', () => ({
   StatusBar: 'StatusBar',
