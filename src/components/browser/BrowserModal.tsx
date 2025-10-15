@@ -1,13 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { Modal, View, StyleSheet, Share } from 'react-native';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { Modal, StyleSheet, Share, Animated } from 'react-native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import type { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
 import * as Haptics from 'expo-haptics';
 import { BrowserHeader } from './BrowserHeader';
 import { BrowserToolbar } from './BrowserToolbar';
 import { SwipeableWebView } from './SwipeableWebView';
 import { useBrowserLoading } from '../../hooks/useBrowserLoading';
+import { usePullToDismiss } from '../../hooks/usePullToDismiss';
 import { useTheme } from '../../hooks/useTheme';
-import { WebViewRef } from '../../types';
+import { WebViewRef, NavigationState } from '../../types';
 
 interface BrowserModalProps {
   visible: boolean;
@@ -24,104 +26,127 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
   const webViewRef = useRef<WebViewRef>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
-  // Use refs to track the actual navigation state for gesture handlers
+  const [activeUrl, setActiveUrl] = useState(currentUrl);
+
+  // Refs for gesture handlers to avoid race conditions with state updates
   const canGoBackRef = useRef(false);
   const canGoForwardRef = useRef(false);
-  // Track if we just started a navigation (to ignore stale canGoBack updates)
   const justNavigatedRef = useRef(false);
-  const { isLoading, progress, handleLoadProgress, resetProgress } = useBrowserLoading();
+  const initialUrlRef = useRef(currentUrl);
 
-  const handleReload = () => {
+  const { isLoading, progress, handleLoadProgress, resetProgress } = useBrowserLoading();
+  const { panResponder, translateY } = usePullToDismiss({ onDismiss: onClose });
+
+  // Reset navigation state when modal opens
+  useEffect(() => {
+    if (visible) {
+      initialUrlRef.current = currentUrl;
+      setActiveUrl(currentUrl);
+      setCanGoBack(false);
+      setCanGoForward(false);
+      canGoBackRef.current = false;
+      canGoForwardRef.current = false;
+      justNavigatedRef.current = false;
+    }
+  }, [visible, currentUrl]);
+
+  const handleReload = useCallback(() => {
     webViewRef.current?.reload();
-  };
+  }, []);
 
   const handleStop = () => {
     webViewRef.current?.stopLoading();
     handleLoadProgress(1); // Complete the loading bar
   };
 
-  const handleGoBack = () => {
-    console.log('=== handleGoBack called ===');
-    console.log('webViewRef.current exists:', !!webViewRef.current);
-    console.log('canGoBackRef.current:', canGoBackRef.current);
-    console.log('canGoBack (state):', canGoBack);
-
-    // Use ref for the check, not state (to avoid race conditions)
+  const handleGoBack = useCallback(() => {
     if (webViewRef.current && canGoBackRef.current) {
-      console.log('>>> Executing goBack()');
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       webViewRef.current.goBack();
-    } else {
-      console.log('>>> NOT executing goBack() - conditions not met');
     }
-  };
+  }, []);
 
-  const handleGoForward = () => {
-    // Use ref for the check, not state (to avoid race conditions)
+  const handleGoForward = useCallback(() => {
     if (webViewRef.current && canGoForwardRef.current) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       webViewRef.current.goForward();
     }
-  };
+  }, []);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
-      await Share.share({
-        url: currentUrl,
-      });
+      await Share.share({ url: activeUrl });
     } catch (error) {
-      console.error(error);
+      console.error('Share failed:', error);
     }
-  };
+  }, [activeUrl]);
 
-  const onLoadProgress = (event: { nativeEvent: { progress: number } }) => {
+  const onLoadProgress = useCallback((event: { nativeEvent: { progress: number } }) => {
     handleLoadProgress(event.nativeEvent.progress);
-  };
+  }, [handleLoadProgress]);
 
-  const onLoadStart = (event: WebViewNavigationEvent) => {
-    console.log('=== onLoadStart ===');
-    console.log('URL:', event.nativeEvent.url);
-    console.log('navigationType:', event.nativeEvent.navigationType);
-    console.log('canGoBack (state):', canGoBack);
-    console.log('canGoBackRef (ref):', canGoBackRef.current);
-    console.log('canGoForward (state):', canGoForward);
-    console.log('canGoForwardRef (ref):', canGoForwardRef.current);
-
-    // Reset progress bar to 0 when new page starts loading
+  const onLoadStart = useCallback((event: WebViewNavigationEvent): void => {
     resetProgress();
 
-    // CRITICAL FIX: Enable back button immediately when navigation starts
-    // If we're loading any page, and this isn't the very first load,
-    // then there must be history to go back to
-    // The WebView's onNavigationStateChange fires too late (after load completes)
-    if (event.nativeEvent.navigationType === 'click' ||
-        event.nativeEvent.navigationType === 'formsubmit' ||
-        event.nativeEvent.navigationType === 'other') {
-      console.log('>>> Enabling back button NOW (navigation type matched)');
-      // User clicked a link or submitted a form - enable back immediately
+    const isInitialLoad = event.nativeEvent.url === initialUrlRef.current;
+    const isUserNavigation = event.nativeEvent.navigationType !== 'reload' &&
+                             event.nativeEvent.navigationType !== 'backforward';
+
+    // Enable back button immediately when user navigates (not initial load)
+    // This prevents getting stuck if the page never fully loads
+    if (isUserNavigation && !isInitialLoad) {
       setCanGoBack(true);
       canGoBackRef.current = true;
-      // Mark that we just navigated (to ignore the next stale update)
+      setCanGoForward(false);
+      canGoForwardRef.current = false;
       justNavigatedRef.current = true;
-    } else {
-      console.log('>>> NOT enabling back button (navigationType did not match)');
     }
-  };
+  }, [resetProgress]);
 
-  const onLoadEnd = () => {
-    // Ensure we reach 100% when page finishes loading
+  const onLoadEnd = useCallback(() => {
     handleLoadProgress(1);
-  };
+  }, [handleLoadProgress]);
+
+  const onNavigationStateChange = useCallback((navState: NavigationState) => {
+    // Skip the first stale update after user navigation
+    // WebView initially reports canGoBack=false, then updates to true
+    if (justNavigatedRef.current && !navState.canGoBack) {
+      justNavigatedRef.current = false;
+      return;
+    }
+
+    // Update navigation state from WebView
+    setCanGoBack(navState.canGoBack);
+    setCanGoForward(navState.canGoForward);
+    canGoBackRef.current = navState.canGoBack;
+    canGoForwardRef.current = navState.canGoForward;
+
+    // Update active URL for sharing
+    if (navState.url) {
+      setActiveUrl(navState.url);
+    }
+  }, []);
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      supportedOrientations={['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right']}
+    >
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Animated.View
+          style={[
+            styles.container,
+            { backgroundColor: theme.colors.background, transform: [{ translateY }] },
+          ]}
+        >
           <BrowserHeader
             isLoading={isLoading}
             onReload={handleReload}
             onStop={handleStop}
             onClose={onClose}
+            panResponder={panResponder}
           />
           <SwipeableWebView
             webViewRef={webViewRef}
@@ -131,36 +156,10 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
             onLoadStart={onLoadStart}
             onLoadProgress={onLoadProgress}
             onLoadEnd={onLoadEnd}
-            onNavigationStateChange={(navState) => {
-              console.log('=== onNavigationStateChange ===');
-              console.log('URL:', navState.url);
-              console.log('loading:', navState.loading);
-              console.log('canGoBack (from WebView):', navState.canGoBack);
-              console.log('canGoForward (from WebView):', navState.canGoForward);
-              console.log('canGoBack (current state):', canGoBack);
-              console.log('canGoBackRef (current ref):', canGoBackRef.current);
-              console.log('justNavigatedRef:', justNavigatedRef.current);
-
-              // CRITICAL FIX: Skip the first stale update after navigation
-              // After a link click, WebView fires onNavigationStateChange with stale canGoBack=false
-              // We ignore this ONE update, then accept all subsequent updates normally
-              if (justNavigatedRef.current && !navState.canGoBack) {
-                console.log('>>> SKIPPING stale canGoBack=false update (just navigated)');
-                justNavigatedRef.current = false; // Clear flag after skipping once
-                return;
-              }
-
-              // Normal case: trust WebView's navigation state
-              console.log('>>> Updating navigation state from WebView');
-              setCanGoBack(navState.canGoBack);
-              setCanGoForward(navState.canGoForward);
-              canGoBackRef.current = navState.canGoBack;
-              canGoForwardRef.current = navState.canGoForward;
-              console.log('>>> Updated canGoBack to:', navState.canGoBack);
-              console.log('>>> Updated canGoForward to:', navState.canGoForward);
-            }}
+            onNavigationStateChange={onNavigationStateChange}
             onSwipeBack={handleGoBack}
             onSwipeForward={handleGoForward}
+            onRefresh={handleReload}
           />
           <BrowserToolbar
             canGoBack={canGoBack}
@@ -171,7 +170,7 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
             showLoadingBar={isLoading}
             loadingProgress={progress}
           />
-        </View>
+        </Animated.View>
       </SafeAreaProvider>
     </Modal>
   );

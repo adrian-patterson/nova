@@ -1,32 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 import { HomeScreen } from './src/components/home/HomeScreen';
 import { BrowserModal } from './src/components/browser/BrowserModal';
-import { QRScannerModal } from './src/components/scanner/QRScannerModal';
-import { useQRScanner } from './src/hooks/useQRScanner';
+import { useDeepLinking } from './src/hooks/useDeepLinking';
 import { useTheme } from './src/hooks/useTheme';
 
 export default function App() {
   const [showWebView, setShowWebView] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
-  const { showScanner, openScanner, closeScanner, scaleAnim } = useQRScanner();
   const { theme, isDark } = useTheme();
 
-  const handleNavigate = (url: string) => {
+  const handleNavigate = useCallback((url: string) => {
     setCurrentUrl(url);
     setShowWebView(true);
-  };
+  }, []);
+
+  // Handle deep links from other apps (Messages, Mail, etc.)
+  useDeepLinking({ onOpenURL: handleNavigate });
 
   const handleCloseWebView = () => {
     setShowWebView(false);
     setCurrentUrl('');
-  };
-
-  const handleBarcodeScanned = (data: string) => {
-    closeScanner();
-    handleNavigate(data);
   };
 
   return (
@@ -34,19 +30,12 @@ export default function App() {
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
 
-        <HomeScreen onNavigate={handleNavigate} onQRPress={openScanner} />
+        <HomeScreen onNavigate={handleNavigate} />
 
         <BrowserModal
           visible={showWebView}
           currentUrl={currentUrl}
           onClose={handleCloseWebView}
-        />
-
-        <QRScannerModal
-          visible={showScanner}
-          scaleAnim={scaleAnim}
-          onClose={closeScanner}
-          onBarcodeScanned={handleBarcodeScanned}
         />
       </SafeAreaView>
     </SafeAreaProvider>

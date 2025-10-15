@@ -16,10 +16,11 @@ A single-purpose browser app with:
 - In-app WebView using WKWebView (iOS requirement)
 - No persistent cache or saved data
 - No browsing history
-- QR code scanner for quick link access
 - Full browser navigation (back/forward/refresh/share)
 - Swipe gestures for navigation
 - Safari-style loading indicators
+- Support for landscape mode
+- Inline video playback (no auto-fullscreen)
 
 ## Technical Requirements
 
@@ -39,12 +40,6 @@ A single-purpose browser app with:
   - Search via DuckDuckGo if not a URL
   - Keyboard-aware layout (adjusts for orientation)
 
-- **QR Code Scanner**
-  - Camera button in input field
-  - Full-screen scanner modal
-  - Animated corner indicators
-  - Scans QR codes and navigates to URL
-
 - **Theme Support**
   - Follows system theme (light/dark mode)
   - Consistent theming across all components
@@ -56,10 +51,13 @@ A single-purpose browser app with:
   - No cookies saved
   - No browsing history
   - Third-party cookies disabled
+  - Inline media playback (videos don't auto-fullscreen)
+  - Supports portrait and landscape orientations
 
 - **Header**
   - Reload button
   - Done button (closes browser)
+  - Pull-to-dismiss gesture (swipe down to close modal)
   - Minimal padding for space efficiency
 
 - **Footer/Toolbar**
@@ -113,14 +111,11 @@ nova/
 │   │   │   ├── HomeScreen.tsx
 │   │   │   ├── UrlInput.tsx
 │   │   │   └── GoButton.tsx
-│   │   ├── scanner/           # QR scanner components
-│   │   │   ├── QRScannerModal.tsx
-│   │   │   └── ScannerOverlay.tsx
 │   │   └── shared/            # Reusable components
 │   │       └── IconButton.tsx
 │   ├── hooks/                 # Custom React hooks
 │   │   ├── useBrowserLoading.ts
-│   │   ├── useQRScanner.ts
+│   │   ├── usePullToDismiss.ts
 │   │   ├── useSwipeGesture.ts
 │   │   └── useTheme.ts
 │   ├── styles/                # Theme system
@@ -170,7 +165,7 @@ nova/
 - `@expo/vector-icons` - Icon library (Ionicons)
 
 **Features**:
-- `expo-camera` - QR code scanning
+- `expo-haptics` - Haptic feedback for navigation
 - `expo-web-browser` - (legacy, being removed)
 
 **Dev**:
@@ -240,12 +235,54 @@ See [TODO.md](TODO.md) for detailed roadmap.
 ## Development Notes
 
 ### Best Practices
+
+#### React Native Core Principles
 - **Keep it simple**: Prioritize minimalism over features
 - **Type safety**: Use TypeScript properly (no `any`)
 - **Component size**: Keep files under 100 lines
 - **Single responsibility**: One purpose per component/hook
 - **Theme consistency**: Use theme system for all colors
 - **Safe areas**: Always handle iPhone notch/home indicator
+
+#### TypeScript Standards (2025)
+- **Strict mode enabled**: Always use TypeScript strict mode in `tsconfig.json`
+- **No `any` types**: Define explicit types for all variables, props, and return values
+- **PascalCase for components**: Use PascalCase for React components
+- **CONSTANT_CASE for globals**: Use CONSTANT_CASE for global constants and enums
+- **Path aliases**: Use `tsconfig.json` path aliases for cleaner imports
+- **Type inference**: Leverage TypeScript's type inference in hooks like `useState`
+
+#### Performance Optimization
+- **Native driver animations**: Always use `useNativeDriver: true` for animations
+- **React.memo() for expensive renders**: Wrap components that render frequently with React.memo()
+- **useMemo for calculations**: Use `useMemo` to cache expensive computations
+- **useCallback for handlers**: Use `useCallback` for event handlers passed as props
+- **FlatList optimization**: Implement `getItemLayout` for long lists, consider FlashList for better performance
+- **Minimize setState calls**: Batch state updates to reduce re-renders
+- **Image optimization**: Use appropriate image sizes and formats
+- **StyleSheet.create()**: Always use StyleSheet.create() for style objects (performance + type safety)
+
+#### Component Architecture
+- **Container/Presentational pattern**: Separate business logic (containers) from UI (presentational components)
+- **Custom hooks for logic**: Extract reusable stateful logic into custom hooks
+- **Compound components**: Use compound component pattern for related UI elements
+- **Props drilling prevention**: Use Context API or custom hooks to avoid excessive prop passing
+- **Arrow functions**: Use arrow functions for component definitions and event handlers
+- **DRY principle**: Refactor repeated code into reusable components or hooks
+
+#### State Management
+- **useState for simple state**: Use `useState` for component-level state
+- **useReducer for complex logic**: Use `useReducer` for complex state transitions
+- **Context API for shared state**: Use Context for state that needs to be shared across components
+- **Refs for non-reactive values**: Use `useRef` for values that don't trigger re-renders (WebView, animations)
+- **Avoid prop drilling**: Lift state only as high as needed
+
+#### Code Quality
+- **ESLint + Prettier**: Enforce code consistency with ESLint and Prettier
+- **Static analysis**: Run TypeScript and ESLint on every commit
+- **Testing**: Write tests for utils, hooks, and critical user flows
+- **Error boundaries**: Implement error boundaries for graceful error handling
+- **Accessibility**: Use accessibility props (accessibilityLabel, accessibilityRole, etc.)
 
 ### Common Patterns
 
@@ -287,10 +324,6 @@ See [TODO.md](TODO.md) for detailed roadmap.
 **Safe area in modals**:
 - **Problem**: SafeAreaView doesn't work in Modal
 - **Solution**: Use `useSafeAreaInsets()` and apply as padding
-
-**QR scanner not navigating**:
-- **Problem**: Scanning code doesn't open browser
-- **Solution**: Call `handleNavigate()` instead of just setting URL
 
 **Theme not updating in modals**:
 - **Problem**: Theme changes don't reflect in Modal components
@@ -353,7 +386,7 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2025-10-07
-**Current Version**: 1.0.1
+**Last Updated**: 2025-10-10
+**Current Version**: 1.1.0
 **Target**: iOS Default Browser
 **Package Manager**: Bun

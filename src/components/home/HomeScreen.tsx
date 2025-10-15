@@ -8,12 +8,10 @@ import { useTheme } from '../../hooks/useTheme';
 
 interface HomeScreenProps {
   onNavigate: (url: string) => void;
-  onQRPress: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   onNavigate,
-  onQRPress,
 }) => {
   const [url, setUrl] = useState('');
   const { theme } = useTheme();
@@ -41,7 +39,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           value={url}
           onChangeText={setUrl}
           onSubmit={handleGo}
-          onQRPress={onQRPress}
         />
         <GoButton onPress={handleGo} />
       </View>

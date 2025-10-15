@@ -38,25 +38,23 @@ export const useSwipeGesture = ({
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
         startX.current = evt.nativeEvent.pageX;
-        // Only respond to gestures starting from edges
-        const isLeftEdge = startX.current < SWIPE_EDGE_THRESHOLD && canGoBackRef.current;
-        const isRightEdge = startX.current > width - SWIPE_EDGE_THRESHOLD && canGoForwardRef.current;
-        console.log('Start X:', startX.current, 'isLeftEdge:', isLeftEdge, 'isRightEdge:', isRightEdge, 'width:', width);
-        return isLeftEdge || isRightEdge;
+        // Always capture touch on the edge overlays
+        return true;
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const shouldMove = Math.abs(gestureState.dx) > SWIPE_MOVE_THRESHOLD;
-        console.log('Move dx:', gestureState.dx, 'shouldMove:', shouldMove);
-        return shouldMove;
+        // Capture if moving horizontally more than threshold
+        return Math.abs(gestureState.dx) > SWIPE_MOVE_THRESHOLD;
       },
-      onPanResponderGrant: () => {
+      onPanResponderGrant: (evt) => {
         setIsGesturing(true);
         swipeDistance.setValue(0);
 
-        // Determine swipe direction based on starting edge
-        if (startX.current < SWIPE_EDGE_THRESHOLD && canGoBackRef.current) {
+        // Determine swipe direction based on which edge was touched
+        // Left edge = back (swipe right)
+        // Right edge = forward (swipe left)
+        if (evt.nativeEvent.pageX < SWIPE_EDGE_THRESHOLD && canGoBackRef.current) {
           setSwipeDirection('right');
-        } else if (startX.current > width - SWIPE_EDGE_THRESHOLD && canGoForwardRef.current) {
+        } else if (evt.nativeEvent.pageX > width - SWIPE_EDGE_THRESHOLD && canGoForwardRef.current) {
           setSwipeDirection('left');
         }
       },
@@ -66,21 +64,17 @@ export const useSwipeGesture = ({
         swipeDistance.setValue(distance);
       },
       onPanResponderRelease: (evt, gestureState) => {
-        console.log('Release - startX:', startX.current, 'dx:', gestureState.dx, 'canGoBack:', canGoBackRef.current, 'canGoForward:', canGoForwardRef.current);
-
         setIsGesturing(false);
         setSwipeDirection(null);
         swipeDistance.setValue(0);
 
         // Swipe from left edge to go back (swipe right)
         if (startX.current < SWIPE_EDGE_THRESHOLD && gestureState.dx > SWIPE_DISTANCE_THRESHOLD && canGoBackRef.current) {
-          console.log('Triggering back navigation');
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           onSwipeBack();
         }
         // Swipe from right edge to go forward (swipe left)
         else if (startX.current > width - SWIPE_EDGE_THRESHOLD && gestureState.dx < -SWIPE_DISTANCE_THRESHOLD && canGoForwardRef.current) {
-          console.log('Triggering forward navigation');
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           onSwipeForward();
         }
@@ -90,6 +84,8 @@ export const useSwipeGesture = ({
         setSwipeDirection(null);
         swipeDistance.setValue(0);
       },
+      // CRITICAL: Prevent other responders from taking over
+      onPanResponderTerminationRequest: () => false,
     })
   ).current;
 

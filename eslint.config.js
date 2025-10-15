@@ -64,6 +64,7 @@ export default [
 
       // General
       'no-unused-vars': 'off', // Use TypeScript version instead
+      'no-undef': 'off', // TypeScript handles this
     },
   },
   // Test files configuration
