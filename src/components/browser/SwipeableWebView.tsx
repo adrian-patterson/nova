@@ -60,7 +60,6 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
           ref={webViewRef}
           source={{ uri: currentUrl }}
           style={[styles.webView, { backgroundColor: theme.colors.background }]}
-          backgroundColor={theme.colors.background}
           incognito={true}
           cacheEnabled={false}
           thirdPartyCookiesEnabled={false}

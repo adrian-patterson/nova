@@ -21,7 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   currentEngine,
   onEngineSelect,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { panResponder, translateY } = usePullToDismiss({ onDismiss: onClose });
 
   const engines = Object.values(SEARCH_ENGINES);
@@ -58,7 +58,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       transparent={true}
       statusBarTranslucent={false}
     >
-      <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Animated.View
           style={[

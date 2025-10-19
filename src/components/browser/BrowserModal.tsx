@@ -22,7 +22,7 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
   currentUrl,
   onClose,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const webViewRef = useRef<WebViewRef>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -155,7 +155,7 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
       transparent={true}
       statusBarTranslucent={false}
     >
-      <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Animated.View
           style={[
