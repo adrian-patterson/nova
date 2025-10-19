@@ -55,17 +55,29 @@ describe('urlHelpers', () => {
       expect(formatUrl('  https://example.com  ')).toBe('https://example.com');
     });
 
-    it('should create DuckDuckGo search URL for search queries', () => {
-      expect(formatUrl('hello world')).toBe('https://duckduckgo.com/?q=hello%20world');
-      expect(formatUrl('search query')).toBe('https://duckduckgo.com/?q=search%20query');
+    it('should create Brave search URL for search queries (default)', () => {
+      expect(formatUrl('hello world')).toBe('https://search.brave.com/search?q=hello%20world');
+      expect(formatUrl('search query')).toBe('https://search.brave.com/search?q=search%20query');
     });
 
     it('should encode special characters in search queries', () => {
-      expect(formatUrl('test@#$%')).toBe('https://duckduckgo.com/?q=test%40%23%24%25');
+      expect(formatUrl('test@#$%')).toBe('https://search.brave.com/search?q=test%40%23%24%25');
     });
 
-    it('should create DuckDuckGo search for single words without dots', () => {
-      expect(formatUrl('example')).toBe('https://duckduckgo.com/?q=example');
+    it('should create Brave search for single words without dots', () => {
+      expect(formatUrl('example')).toBe('https://search.brave.com/search?q=example');
+    });
+
+    it('should use DuckDuckGo when specified', () => {
+      expect(formatUrl('hello world', 'duckduckgo')).toBe('https://duckduckgo.com/?q=hello%20world');
+    });
+
+    it('should use Google when specified', () => {
+      expect(formatUrl('hello world', 'google')).toBe('https://www.google.com/search?q=hello%20world');
+    });
+
+    it('should use Ecosia when specified', () => {
+      expect(formatUrl('hello world', 'ecosia')).toBe('https://www.ecosia.org/search?q=hello%20world');
     });
   });
 });

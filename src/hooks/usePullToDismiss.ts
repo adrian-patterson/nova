@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Animated, PanResponder } from 'react-native';
+import { Animated, PanResponder, Dimensions } from 'react-native';
 
 interface UsePullToDismissProps {
   onDismiss: () => void;
@@ -9,6 +9,7 @@ interface UsePullToDismissProps {
 export const usePullToDismiss = ({ onDismiss, threshold = 100 }: UsePullToDismissProps) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const isPulling = useRef(false);
+  const screenHeight = Dimensions.get('window').height;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -19,7 +20,7 @@ export const usePullToDismiss = ({ onDismiss, threshold = 100 }: UsePullToDismis
         return gestureState.dy > 5 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
       },
       onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        // Capture the gesture if it's clearly a downward swipe
+        // Don't capture unless it's a clear downward swipe
         return gestureState.dy > 10 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
       },
       onPanResponderGrant: () => {
@@ -36,13 +37,20 @@ export const usePullToDismiss = ({ onDismiss, threshold = 100 }: UsePullToDismis
 
         if (gestureState.dy > threshold) {
           // Dismiss if pulled past threshold
+          // Animate to screen height to ensure it goes fully off-screen
           Animated.timing(translateY, {
-            toValue: 500,
-            duration: 200,
+            toValue: screenHeight,
+            duration: 250,
             useNativeDriver: true,
-          }).start(() => {
-            translateY.setValue(0);
-            onDismiss();
+          }).start(({ finished }) => {
+            if (finished) {
+              // Wait a frame to ensure animation completes visually
+              requestAnimationFrame(() => {
+                onDismiss();
+                // Reset after dismissing to avoid visible jump on next open
+                setTimeout(() => translateY.setValue(0), 50);
+              });
+            }
           });
         } else {
           // Spring back to original position

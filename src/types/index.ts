@@ -8,3 +8,13 @@ export interface NavigationState {
   loading: boolean;
   url: string;
 }
+
+export type SearchEngineId = 'brave' | 'duckduckgo' | 'google' | 'ecosia';
+
+export interface SearchEngine {
+  id: SearchEngineId;
+  name: string;
+  searchUrl: (query: string) => string;
+  icon: string; // Ionicons name
+  color: string; // Brand color
+}

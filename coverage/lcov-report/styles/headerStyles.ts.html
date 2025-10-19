@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for components/home/UrlInput.tsx</title>
+    <title>Code coverage report for styles/headerStyles.ts</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../prettify.css" />
-    <link rel="stylesheet" href="../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../sort-arrow-sprite.png);
+            background-image: url(../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">components/home</a> UrlInput.tsx</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">styles</a> headerStyles.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -37,9 +37,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
@@ -107,18 +107,7 @@
 <a name='L42'></a><a href='#L42'>42</a>
 <a name='L43'></a><a href='#L43'>43</a>
 <a name='L44'></a><a href='#L44'>44</a>
-<a name='L45'></a><a href='#L45'>45</a>
-<a name='L46'></a><a href='#L46'>46</a>
-<a name='L47'></a><a href='#L47'>47</a>
-<a name='L48'></a><a href='#L48'>48</a>
-<a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a>
-<a name='L51'></a><a href='#L51'>51</a>
-<a name='L52'></a><a href='#L52'>52</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L45'></a><a href='#L45'>45</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -129,9 +118,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -155,67 +149,52 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
-import { TextInput, StyleSheet } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { StyleSheet } from 'react-native';
 &nbsp;
-interface UrlInputProps {
-  value: string;
-  onChangeText: (text: string) =&gt; void;
-  onSubmit: () =&gt; void;
-}
-&nbsp;
-export const UrlInput: React.FC&lt;UrlInputProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
-  value,
-  onChangeText,
-  onSubmit,
-}) =&gt; {
-  const { theme } = <span class="cstat-no" title="statement not covered" >useTheme();</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;TextInput
-      style={[
-        styles.input,
-        {
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
-          color: theme.colors.text,
-        },
-      ]}
-      placeholder="Enter URL or search"
-      placeholderTextColor={theme.colors.textSecondary}
-      value={value}
-      onChangeText={onChangeText}
-      onSubmitEditing={onSubmit}
-      autoCapitalize="none"
-      autoCorrect={false}
-      keyboardType="web-search"
-      returnKeyType="go"
-    /&gt;
-  );
-};
-&nbsp;
-const styles = <span class="cstat-no" title="statement not covered" >StyleSheet.create({</span>
-  input: {
-    width: '90%',
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 8,
+/**
+ * Shared header styles used across BrowserHeader, SettingsHeader, and HomeHeader
+ * Ensures consistent spacing and layout throughout the app
+ */
+export const headerStyles = <span class="cstat-no" title="statement not covered" >StyleSheet.create({</span>
+  container: {
+    width: '100%',
+  },
+  gestureArea: {
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    position: 'relative',
+  },
+  gestureLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
+    zIndex: 2,
+  },
+  button: {
+    padding: 8,
+  },
+  buttonText: {
     fontSize: 16,
-    marginBottom: 20,
   },
 });
+&nbsp;
+/**
+ * Constants for header spacing
+ */
+export const HEADER_VERTICAL_PADDING = <span class="cstat-no" title="statement not covered" >4;</span>
+export const HEADER_HORIZONTAL_PADDING = <span class="cstat-no" title="statement not covered" >16;</span>
+export const HEADER_BUTTON_PADDING = <span class="cstat-no" title="statement not covered" >8;</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -225,14 +204,14 @@ const styles = <span class="cstat-no" title="statement not covered" >StyleSheet.
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-10-19T16:31:13.669Z
             </div>
-        <script src="../../prettify.js"></script>
+        <script src="../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../sorter.js"></script>
-        <script src="../../block-navigation.js"></script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
     </body>
 </html>
     

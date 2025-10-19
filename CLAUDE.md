@@ -13,14 +13,17 @@ Nova is a minimalist React Native mobile browser app designed to help maintain d
 A single-purpose browser app with:
 - Text input field for URLs and search
 - "Go" button to navigate
+- Settings button to configure search engine
 - In-app WebView using WKWebView (iOS requirement)
 - No persistent cache or saved data
 - No browsing history
 - Full browser navigation (back/forward/refresh/share)
 - Swipe gestures for navigation
+- Pull-to-dismiss gesture for modals
 - Safari-style loading indicators
 - Support for landscape mode
 - Inline video playback (no auto-fullscreen)
+- Configurable search engines (DuckDuckGo, Google, Brave, Bing, Yahoo)
 
 ## Technical Requirements
 
@@ -37,8 +40,13 @@ A single-purpose browser app with:
   - Single text field with placeholder "Enter URL or search"
   - Auto-detect URL vs search query
   - Auto-format URLs (add `https://` if missing)
-  - Search via DuckDuckGo if not a URL
+  - Search using configured search engine (default: DuckDuckGo)
   - Keyboard-aware layout (adjusts for orientation)
+
+- **Settings Button**
+  - Opens settings modal
+  - Allows user to select default search engine
+  - Options: DuckDuckGo, Google, Brave, Bing, Yahoo
 
 - **Theme Support**
   - Follows system theme (light/dark mode)
@@ -81,7 +89,21 @@ A single-purpose browser app with:
   - Brief hold, then fades out
   - Uses native driver for performance
 
-#### 3. Data & Privacy
+#### 3. Settings Modal
+- **Search Engine Selection**
+  - Modal interface with pull-to-dismiss gesture
+  - List of available search engines
+  - Visual indicator for currently selected engine
+  - Settings persist using AsyncStorage
+  - Options: DuckDuckGo (default), Google, Brave, Bing, Yahoo
+
+- **Modal Behavior**
+  - Pull-to-dismiss gesture (drag header down)
+  - Themed background (respects light/dark mode)
+  - Slide-up animation on open
+  - Slide-down animation on close
+
+#### 4. Data & Privacy
 - **No Persistent Storage**
   - Incognito mode enabled
   - Cache disabled
@@ -109,23 +131,31 @@ nova/
 │   │   │   └── SwipeableWebView.tsx
 │   │   ├── home/              # Home screen components
 │   │   │   ├── HomeScreen.tsx
+│   │   │   ├── HomeHeader.tsx
 │   │   │   ├── UrlInput.tsx
 │   │   │   └── GoButton.tsx
+│   │   ├── settings/          # Settings modal components
+│   │   │   ├── SettingsModal.tsx
+│   │   │   ├── SettingsHeader.tsx
+│   │   │   └── SearchEngineOption.tsx
 │   │   └── shared/            # Reusable components
 │   │       └── IconButton.tsx
 │   ├── hooks/                 # Custom React hooks
 │   │   ├── useBrowserLoading.ts
 │   │   ├── usePullToDismiss.ts
+│   │   ├── useSearchEngine.ts
 │   │   ├── useSwipeGesture.ts
 │   │   └── useTheme.ts
 │   ├── styles/                # Theme system
-│   │   └── theme.ts
+│   │   ├── theme.ts
+│   │   └── headerStyles.ts
 │   ├── types/                 # TypeScript types
 │   │   └── index.ts
 │   └── utils/                 # Helper functions
 │       ├── constants.ts
+│       ├── searchEngines.ts
 │       └── urlHelpers.ts
-├── App.tsx                    # Root component (~60 lines)
+├── App.tsx                    # Root component
 ├── app.json                   # Expo configuration
 ├── CLAUDE.md                  # This file
 ├── README.md                  # Public documentation
@@ -166,7 +196,7 @@ nova/
 
 **Features**:
 - `expo-haptics` - Haptic feedback for navigation
-- `expo-web-browser` - (legacy, being removed)
+- `@react-native-async-storage/async-storage` - Settings persistence
 
 **Dev**:
 - `typescript` - Type safety
@@ -311,24 +341,6 @@ See [TODO.md](TODO.md) for detailed roadmap.
 - **Integration tests**: User flows
 - **E2E tests**: Critical paths
 
-### Known Issues & Solutions
-
-**Loading bar freeze**:
-- **Problem**: Loading gets stuck at 90% when navigation interrupted
-- **Solution**: Reset loading state in `onNavigationStateChange`
-
-**Navigation race condition**:
-- **Problem**: Multiple nav actions cause freeze
-- **Solution**: Disable buttons while loading, check in handlers
-
-**Safe area in modals**:
-- **Problem**: SafeAreaView doesn't work in Modal
-- **Solution**: Use `useSafeAreaInsets()` and apply as padding
-
-**Theme not updating in modals**:
-- **Problem**: Theme changes don't reflect in Modal components
-- **Solution**: Use `Appearance.addChangeListener()` instead of `useColorScheme()` in `useTheme` hook
-
 ## Future Enhancements
 
 ### High Priority
@@ -386,7 +398,7 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2025-10-10
-**Current Version**: 1.1.0
+**Last Updated**: 2025-10-19
+**Current Version**: 1.3.1
 **Target**: iOS Default Browser
 **Package Manager**: Bun

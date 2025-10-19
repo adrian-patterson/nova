@@ -1,3 +1,6 @@
+import { SearchEngineId } from '../types';
+import { getSearchUrl, DEFAULT_SEARCH_ENGINE } from './searchEngines';
+
 /**
  * Checks if the input string is a URL
  */
@@ -17,9 +20,9 @@ export const isUrl = (input: string): boolean => {
 
 /**
  * Formats input as URL or search query
- * Returns a full URL with protocol or DuckDuckGo search URL
+ * Returns a full URL with protocol or search engine URL
  */
-export const formatUrl = (input: string): string => {
+export const formatUrl = (input: string, searchEngine: SearchEngineId = DEFAULT_SEARCH_ENGINE): string => {
   if (!input.trim()) return '';
 
   const trimmed = input.trim();
@@ -32,7 +35,6 @@ export const formatUrl = (input: string): string => {
     return `https://${trimmed}`;
   }
 
-  // Otherwise, treat as search query
-  const searchQuery = encodeURIComponent(trimmed);
-  return `https://duckduckgo.com/?q=${searchQuery}`;
+  // Otherwise, treat as search query using selected engine
+  return getSearchUrl(searchEngine, trimmed);
 };

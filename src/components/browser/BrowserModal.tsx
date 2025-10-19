@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Modal, StyleSheet, Share, Animated } from 'react-native';
+import { Modal, StyleSheet, Share, Animated, StatusBar } from 'react-native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import type { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
 import * as Haptics from 'expo-haptics';
@@ -37,6 +37,17 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
   const { isLoading, progress, handleLoadProgress, resetProgress } = useBrowserLoading();
   const { panResponder, translateY } = usePullToDismiss({ onDismiss: onClose });
 
+  // Handle animated close
+  const handleClose = useCallback(() => {
+    Animated.timing(translateY, {
+      toValue: 1000,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  }, [translateY, onClose]);
+
   // Reset navigation state when modal opens
   useEffect(() => {
     if (visible) {
@@ -47,8 +58,16 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
       canGoBackRef.current = false;
       canGoForwardRef.current = false;
       justNavigatedRef.current = false;
+
+      // Animate slide up on open
+      translateY.setValue(1000);
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [visible, currentUrl]);
+  }, [visible, currentUrl, translateY]);
 
   const handleReload = useCallback(() => {
     webViewRef.current?.reload();
@@ -130,22 +149,31 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      onRequestClose={onClose}
+      animationType="none"
+      onRequestClose={handleClose}
       supportedOrientations={['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right']}
+      transparent={true}
+      statusBarTranslucent={false}
     >
+      <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Animated.View
           style={[
-            styles.container,
-            { backgroundColor: theme.colors.background, transform: [{ translateY }] },
+            styles.modalBackground,
+            { backgroundColor: theme.colors.background },
           ]}
         >
+          <Animated.View
+            style={[
+              styles.container,
+              { backgroundColor: theme.colors.background, transform: [{ translateY }] },
+            ]}
+          >
           <BrowserHeader
             isLoading={isLoading}
             onReload={handleReload}
             onStop={handleStop}
-            onClose={onClose}
+            onClose={handleClose}
             panResponder={panResponder}
           />
           <SwipeableWebView
@@ -159,7 +187,6 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
             onNavigationStateChange={onNavigationStateChange}
             onSwipeBack={handleGoBack}
             onSwipeForward={handleGoForward}
-            onRefresh={handleReload}
           />
           <BrowserToolbar
             canGoBack={canGoBack}
@@ -170,6 +197,7 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
             showLoadingBar={isLoading}
             loadingProgress={progress}
           />
+          </Animated.View>
         </Animated.View>
       </SafeAreaProvider>
     </Modal>
@@ -177,6 +205,9 @@ export const BrowserModal: React.FC<BrowserModalProps> = ({
 };
 
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

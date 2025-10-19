@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, Animated, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { WebView } from 'react-native-webview';
 import type { WebViewNavigationEvent } from 'react-native-webview/lib/WebViewTypes';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
-import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { useTheme } from '../../hooks/useTheme';
 import { WebViewRef, NavigationState } from '../../types';
 
@@ -18,7 +17,6 @@ interface SwipeableWebViewProps {
   onNavigationStateChange: (navState: NavigationState) => void;
   onSwipeBack: () => void;
   onSwipeForward: () => void;
-  onRefresh: () => void;
 }
 
 export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
@@ -32,7 +30,6 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
   onNavigationStateChange,
   onSwipeBack,
   onSwipeForward,
-  onRefresh,
 }) => {
   const { theme } = useTheme();
   const { panResponder, isGesturing, swipeDirection, swipeDistance } = useSwipeGesture({
@@ -40,16 +37,6 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
     canGoForward,
     onSwipeBack,
     onSwipeForward,
-  });
-
-  const {
-    panResponder: refreshPanResponder,
-    pullDistance,
-    isRefreshing,
-    spinnerRotation,
-    spinnerOpacity,
-  } = usePullToRefresh({
-    onRefresh,
   });
 
   // Calculate page translation based on swipe direction
@@ -63,26 +50,6 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <View style={[styles.backgroundLayer, { backgroundColor: theme.colors.surface }]} />
 
-      {/* Pull-to-refresh indicator */}
-      <Animated.View
-        style={[
-          styles.refreshIndicator,
-          {
-            opacity: spinnerOpacity,
-            transform: [{ translateY: pullDistance }, { rotate: spinnerRotation }],
-          },
-        ]}
-      >
-        <ActivityIndicator
-          size="large"
-          color={theme.colors.text}
-          animating={isRefreshing}
-        />
-      </Animated.View>
-
-      {/* Refresh gesture area at top */}
-      <View style={styles.refreshArea} {...refreshPanResponder.panHandlers} />
-
       <Animated.View
         style={[
           styles.webViewContainer,
@@ -92,7 +59,8 @@ export const SwipeableWebView: React.FC<SwipeableWebViewProps> = ({
         <WebView
           ref={webViewRef}
           source={{ uri: currentUrl }}
-          style={styles.webView}
+          style={[styles.webView, { backgroundColor: theme.colors.background }]}
+          backgroundColor={theme.colors.background}
           incognito={true}
           cacheEnabled={false}
           thirdPartyCookiesEnabled={false}
@@ -127,24 +95,6 @@ const styles = StyleSheet.create({
   },
   backgroundLayer: {
     ...StyleSheet.absoluteFillObject,
-  },
-  refreshIndicator: {
-    position: 'absolute',
-    top: -40,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-    zIndex: 10,
-  },
-  refreshArea: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    zIndex: 5,
   },
   webViewContainer: {
     flex: 1,

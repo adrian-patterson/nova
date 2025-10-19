@@ -15,3 +15,8 @@ export const KEYBOARD_OFFSET_LANDSCAPE = -50;
  * Colors
  */
 export const LOADING_BAR_COLOR = '#007AFF'; // iOS blue
+
+/**
+ * Storage keys
+ */
+export const STORAGE_KEY_SEARCH_ENGINE = '@nova_search_engine';
